@@ -12,13 +12,13 @@ else
     PREFIX="${PREFIX:-$HOME/.local}"
 fi
 
-echo "==> Configuring biwaymenu ($BUILD_TYPE)..."
+echo "==> Configuring miqulauncher ($BUILD_TYPE)..."
 cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCMAKE_INSTALL_PREFIX="$PREFIX" "$@"
 
-echo "==> Building biwaymenu..."
+echo "==> Building miqulauncher..."
 cmake --build "$BUILD_DIR" -j"$(nproc)"
 
-echo "==> Installing biwaymenu to $PREFIX/bin..."
+echo "==> Installing miqulauncher to $PREFIX/bin..."
 cmake --install "$BUILD_DIR"
 
-echo "==> biwaymenu build and installation finished successfully!"
+echo "==> miqulauncher build and installation finished successfully!"

@@ -1,7 +1,7 @@
-#include <biwaytoolkit/biwaytoolkit.hpp>
+#include <miqutoolkit/miqutoolkit.hpp>
 #include <thread>
 
-using namespace biway;
+using namespace miqu;
 
 int main(int argc, char* argv[]) {
     auto engine = AppEngine::create();
