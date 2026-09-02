@@ -4,21 +4,19 @@ set -euo pipefail
 BUILD_DIR="build"
 BUILD_TYPE="${BUILD_TYPE:-Release}"
 
-export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig:$HOME/.local/share/pkgconfig:${PKG_CONFIG_PATH:-}"
-
-if [ "${EUID}" -eq 0 ]; then
-    PREFIX="/usr"
-else
-    PREFIX="${PREFIX:-$HOME/.local}"
-fi
-
 echo "==> Configuring miqulauncher ($BUILD_TYPE)..."
-cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCMAKE_INSTALL_PREFIX="$PREFIX" "$@"
+cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCMAKE_INSTALL_PREFIX="/usr" "$@"
 
 echo "==> Building miqulauncher..."
 cmake --build "$BUILD_DIR" -j"$(nproc)"
 
-echo "==> Installing miqulauncher to $PREFIX/bin..."
-cmake --install "$BUILD_DIR"
+echo "==> Build finished successfully! Binary is at $BUILD_DIR/miqulauncher"
 
-echo "==> miqulauncher build and installation finished successfully!"
+# If invoked with sudo/root, automatically install to system
+if [ "${EUID}" -eq 0 ]; then
+    echo "==> Installing miqulauncher to system (/usr/bin)..."
+    cmake --install "$BUILD_DIR"
+    echo "==> miqulauncher successfully installed to /usr/bin!"
+else
+    echo "==> Built locally in $BUILD_DIR. To install system-wide, run: sudo ./make.sh"
+fi

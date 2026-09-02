@@ -10,10 +10,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;$ORIGIN/../lib")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 find_package(PkgConfig REQUIRED)
-
-# Support ~/.local pkgconfig directory
-set(ENV{PKG_CONFIG_PATH} "$ENV{HOME}/.local/lib/pkgconfig:$ENV{HOME}/.local/share/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-
 pkg_check_modules(MIQUTOOLKIT REQUIRED IMPORTED_TARGET miqutoolkit)
 
 add_executable(miqulauncher
@@ -23,6 +19,14 @@ add_executable(miqulauncher
 target_link_libraries(miqulauncher PRIVATE
     PkgConfig::MIQUTOOLKIT
 )
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../miqutoolkit/build/libmiqutoolkit.so")
+    target_link_libraries(miqulauncher PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../miqutoolkit/build/libmiqutoolkit.so")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../miqutoolkit/include")
+    target_include_directories(miqulauncher BEFORE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../miqutoolkit/include")
+endif()
 
 target_compile_options(miqulauncher PRIVATE
     -Wall -Wextra -Wpedantic
