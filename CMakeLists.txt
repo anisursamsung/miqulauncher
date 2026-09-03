@@ -14,10 +14,24 @@ pkg_check_modules(MIQUTOOLKIT REQUIRED IMPORTED_TARGET miqutoolkit)
 
 add_executable(miqulauncher
     src/main.cpp
+    src/system/package_manager.cpp
+    src/system/binary_manager.cpp
+    src/providers/app_provider.cpp
+    src/providers/window_provider.cpp
+    src/providers/workspace_provider.cpp
+    src/providers/run_provider.cpp
+    src/ui/grid_item_view.cpp
+    src/ui/launcher_window.cpp
+)
+
+target_include_directories(miqulauncher PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
 target_link_libraries(miqulauncher PRIVATE
     PkgConfig::MIQUTOOLKIT
+    stdc++fs
+    pthread
 )
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../miqutoolkit/build/libmiqutoolkit.so")
