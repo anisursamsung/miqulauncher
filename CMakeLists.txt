@@ -16,10 +16,13 @@ add_executable(miqulauncher
     src/main.cpp
     src/system/package_manager.cpp
     src/system/binary_manager.cpp
+    src/system/cli_parser.cpp
     src/providers/app_provider.cpp
     src/providers/window_provider.cpp
     src/providers/workspace_provider.cpp
     src/providers/run_provider.cpp
+    src/providers/script_provider.cpp
+    src/providers/dmenu_provider.cpp
     src/ui/grid_item_view.cpp
     src/ui/launcher_window.cpp
 )
