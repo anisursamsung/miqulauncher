@@ -81,6 +81,7 @@ bool LauncherWindow::init() {
     // 5. Layer overlay Window
     m_window = WindowBuilder::create()
         ->role(WindowRole::LayerOverlay)
+        ->appId("miqulauncher")
         ->keyboardInteractive(true)
         ->dimBackdrop(true)
         ->closeOnClickOutside(true)
