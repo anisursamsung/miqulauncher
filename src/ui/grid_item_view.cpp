@@ -1,6 +1,6 @@
 #include "grid_item_view.hpp"
 #include <miqutoolkit/view/image_view.hpp>
-#include <miqutoolkit/core/color_scheme.hpp>
+#include <miqutoolkit/core/config.hpp>
 #include <pango/pangocairo.h>
 #include <algorithm>
 

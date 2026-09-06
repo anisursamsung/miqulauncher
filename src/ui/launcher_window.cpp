@@ -71,9 +71,9 @@ bool LauncherWindow::init() {
 
     // 4. Modal Card container
     auto rootCard = CardViewBuilder::create()
-        ->backgroundColor(theme->colors.background)
-        ->stroke(theme->metrics.border_width, theme->colors.outline)
-        ->cornerRadius(theme->metrics.corner_radius)
+        ->backgroundColor(config->colors.background)
+        ->stroke(config->metrics.border_width, config->colors.outline)
+        ->cornerRadius(config->metrics.corner_radius)
         ->padding(16)
         ->addView(contentLayout, LayoutParams(static_cast<int>(LayoutDimension::MatchParent), static_cast<int>(LayoutDimension::MatchParent)))
         ->build();
