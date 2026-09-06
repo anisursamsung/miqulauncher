@@ -8,7 +8,36 @@ A fast Wayland layer-shell application launcher built with Miqutoolkit.
 - **Search & Filter**: Real-time filtering by application name, category, or executable command.
 - **Modes**: Supports Application, Window, and Workspace modes.
 - **Navigation**: Full keyboard (arrows, Enter, Escape) and mouse support.
-- **Theming**: Automatically syncs colors and font/rounding metrics from `miquland.conf`.
+- **Theming & Configuration**: Fully independent customization via `~/.config/miqulauncher/miqulauncher.conf`.
+
+## Configuration
+
+Configuration is loaded from `~/.config/miqulauncher/miqulauncher.conf` (falls back to `/usr/share/miqulauncher/miqulauncher.conf`):
+
+```ini
+# Window & Grid Layout
+width = 800
+height = 460
+cell_size = 100
+spacing = 10
+
+# Colors (Hex: #RRGGBB or #RRGGBBAA)
+background = #f4f8fc
+surface = #ffffff
+surface_variant = #e6eff8
+primary = #0066ff
+on_primary = #ffffff
+text = #0f172a
+text_muted = #475569
+outline = #99c2ff
+
+# Styling & Metrics
+corner_radius = 12
+border_width = 1
+font = Sans
+font_size = 11
+icon_theme = Papirus
+```
 
 ## Dependencies
 

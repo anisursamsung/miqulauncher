@@ -28,6 +28,13 @@ struct LauncherConfig {
     bool allow_mode_switch = true;  // true for multi-mode, false for single -show or -dmenu
     std::string initial_query = ""; // from -filter or -q
     bool dmenu_mode = false;
+
+    // Window & Grid dimensions
+    int width = 800;
+    int height = 460;
+    int cell_size = 100;
+    int spacing = 10;
+    std::string config_path = "";
 };
 
 } // namespace miqu

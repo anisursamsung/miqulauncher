@@ -17,6 +17,7 @@ add_executable(miqulauncher
     src/system/package_manager.cpp
     src/system/binary_manager.cpp
     src/system/cli_parser.cpp
+    src/system/config_manager.cpp
     src/providers/app_provider.cpp
     src/providers/window_provider.cpp
     src/providers/workspace_provider.cpp
@@ -52,3 +53,4 @@ target_compile_options(miqulauncher PRIVATE
 
 include(GNUInstallDirs)
 install(TARGETS miqulauncher RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES assets/miqulauncher.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/miqulauncher)

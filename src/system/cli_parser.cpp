@@ -44,6 +44,7 @@ void CliParser::print_help(const char* prog_name) {
               << "  -show <mode>       Run in dedicated mode (drun, window, workspaces, run)\n"
               << "  -modes <list>      Comma-separated list of enabled modes (e.g. 'drun,run' or 'drun,power:~/bin/power.sh')\n"
               << "  -dmenu             Run in dmenu mode (read items from stdin, write choice to stdout)\n"
+              << "  -c, --config <path>Custom configuration file path\n"
               << "  -p, -mesg <text>   Custom prompt label for the search pill\n"
               << "  -filter, -q <text> Pre-fill search filter query\n"
               << "  -h, --help         Show this help message and exit\n"
@@ -81,6 +82,8 @@ CliParser::ParseResult CliParser::parse(int argc, char* argv[], LauncherConfig& 
             show_mode = argv[++i];
         } else if ((arg == "-modes" || arg == "--modes") && i + 1 < argc) {
             modes_str = argv[++i];
+        } else if ((arg == "-c" || arg == "--config" || arg == "-config") && i + 1 < argc) {
+            out_config.config_path = argv[++i];
         } else if ((arg == "-p" || arg == "--prompt" || arg == "-mesg") && i + 1 < argc) {
             prompt_override = argv[++i];
         } else if ((arg == "-filter" || arg == "--filter" || arg == "-q" || arg == "--query") && i + 1 < argc) {

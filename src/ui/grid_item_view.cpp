@@ -12,7 +12,7 @@ GridItemView::GridItemView(LauncherItem data)
 void GridItemView::draw(cairo_t* cr, const Rect& bounds) {
     if (!cr || bounds.width <= 0 || bounds.height <= 0) return;
 
-    auto theme = ColorScheme::get();
+    auto theme = Theme::get();
 
     // Draw App Icon
     Rect icon_rect(bounds.x + (bounds.width - 48) / 2, bounds.y + 12, 48, 48);
@@ -24,7 +24,11 @@ void GridItemView::draw(cairo_t* cr, const Rect& bounds) {
     PangoLayout* layout = pango_cairo_create_layout(cr);
     pango_layout_set_text(layout, m_data.title.c_str(), -1);
 
-    PangoFontDescription* desc = pango_font_description_from_string("Sans 10");
+    std::string font_family = theme->metrics.font_family.empty() ? "Sans" : theme->metrics.font_family;
+    int font_size = theme->metrics.font_size > 0 ? theme->metrics.font_size : 10;
+    std::string font_spec = font_family + " " + std::to_string(font_size);
+
+    PangoFontDescription* desc = pango_font_description_from_string(font_spec.c_str());
     pango_layout_set_font_description(layout, desc);
     pango_font_description_free(desc);
 
@@ -45,7 +49,10 @@ void GridItemView::draw(cairo_t* cr, const Rect& bounds) {
         PangoLayout* sub_layout = pango_cairo_create_layout(cr);
         pango_layout_set_text(sub_layout, m_data.subtitle.c_str(), -1);
 
-        PangoFontDescription* sub_desc = pango_font_description_from_string("Sans 8");
+        int sub_size = std::max(6, font_size - 2);
+        std::string sub_font_spec = font_family + " " + std::to_string(sub_size);
+
+        PangoFontDescription* sub_desc = pango_font_description_from_string(sub_font_spec.c_str());
         pango_layout_set_font_description(sub_layout, sub_desc);
         pango_font_description_free(sub_desc);
 

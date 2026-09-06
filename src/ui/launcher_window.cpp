@@ -27,13 +27,13 @@ bool LauncherWindow::init() {
         m_dmenu_provider.load_from_stdin();
     }
 
-    auto theme = ColorScheme::get();
+    auto theme = Theme::get();
 
     // 1. GridView setup
     m_grid = GridViewBuilder::create()
-        ->autoFit(100)
-        ->cellHeight(100)
-        ->spacing(10, 10)
+        ->autoFit(m_config.cell_size)
+        ->cellHeight(m_config.cell_size)
+        ->spacing(m_config.spacing, m_config.spacing)
         ->onItemClick([this](size_t index, std::shared_ptr<View> view) {
             handle_item_click(index, view);
         })
@@ -72,7 +72,7 @@ bool LauncherWindow::init() {
     // 4. Modal Card container
     auto rootCard = CardViewBuilder::create()
         ->backgroundColor(theme->colors.background)
-        ->stroke(1, theme->colors.outline)
+        ->stroke(theme->metrics.border_width, theme->colors.outline)
         ->cornerRadius(theme->metrics.corner_radius)
         ->padding(16)
         ->addView(contentLayout, LayoutParams(static_cast<int>(LayoutDimension::MatchParent), static_cast<int>(LayoutDimension::MatchParent)))
@@ -86,7 +86,7 @@ bool LauncherWindow::init() {
         ->dimBackdrop(true)
         ->closeOnClickOutside(true)
         ->closeOnEscape(true)
-        ->contentSize(800, 460)
+        ->contentSize(m_config.width, m_config.height)
         ->contentView(rootCard)
         ->onClose([this]() {
             m_engine->quit();
