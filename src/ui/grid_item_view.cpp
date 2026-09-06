@@ -12,7 +12,7 @@ GridItemView::GridItemView(LauncherItem data)
 void GridItemView::draw(cairo_t* cr, const Rect& bounds) {
     if (!cr || bounds.width <= 0 || bounds.height <= 0) return;
 
-    auto theme = Theme::get();
+    auto config = Config::get();
 
     // Draw App Icon
     Rect icon_rect(bounds.x + (bounds.width - 48) / 2, bounds.y + 12, 48, 48);
@@ -24,8 +24,8 @@ void GridItemView::draw(cairo_t* cr, const Rect& bounds) {
     PangoLayout* layout = pango_cairo_create_layout(cr);
     pango_layout_set_text(layout, m_data.title.c_str(), -1);
 
-    std::string font_family = theme->metrics.font_family.empty() ? "Sans" : theme->metrics.font_family;
-    int font_size = theme->metrics.font_size > 0 ? theme->metrics.font_size : 10;
+    std::string font_family = config->metrics.font_family.empty() ? "Sans" : config->metrics.font_family;
+    int font_size = config->metrics.font_size > 0 ? config->metrics.font_size : 10;
     std::string font_spec = font_family + " " + std::to_string(font_size);
 
     PangoFontDescription* desc = pango_font_description_from_string(font_spec.c_str());
@@ -37,10 +37,10 @@ void GridItemView::draw(cairo_t* cr, const Rect& bounds) {
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
 
     cairo_move_to(cr, bounds.x + 4, bounds.y + 66);
-    cairo_set_source_rgba(cr, theme->colors.on_surface.r,
-                              theme->colors.on_surface.g,
-                              theme->colors.on_surface.b,
-                              theme->colors.on_surface.a);
+    cairo_set_source_rgba(cr, config->colors.on_surface.r,
+                              config->colors.on_surface.g,
+                              config->colors.on_surface.b,
+                              config->colors.on_surface.a);
     pango_cairo_show_layout(cr, layout);
     g_object_unref(layout);
 
@@ -62,14 +62,14 @@ void GridItemView::draw(cairo_t* cr, const Rect& bounds) {
 
         cairo_move_to(cr, bounds.x + 4, bounds.y + 80);
         if (m_data.subtitle.find("Active") != std::string::npos) {
-            cairo_set_source_rgba(cr, theme->colors.primary.r,
-                                      theme->colors.primary.g,
-                                      theme->colors.primary.b,
+            cairo_set_source_rgba(cr, config->colors.primary.r,
+                                      config->colors.primary.g,
+                                      config->colors.primary.b,
                                       1.0f);
         } else {
-            cairo_set_source_rgba(cr, theme->colors.on_surface_variant.r,
-                                      theme->colors.on_surface_variant.g,
-                                      theme->colors.on_surface_variant.b,
+            cairo_set_source_rgba(cr, config->colors.on_surface_variant.r,
+                                      config->colors.on_surface_variant.g,
+                                      config->colors.on_surface_variant.b,
                                       0.75f);
         }
         pango_cairo_show_layout(cr, sub_layout);

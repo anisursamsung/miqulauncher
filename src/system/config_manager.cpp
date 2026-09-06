@@ -45,8 +45,8 @@ void ConfigManager::load(LauncherConfig& config) {
         return;
     }
 
-    // 1. Let Theme load all colors and metrics from this config file
-    Theme::get()->load_from_file(target_path);
+    // 1. Let Config load all colors and metrics from this config file
+    Config::get()->load_from_file(target_path);
 
     // 2. Parse launcher-specific layout properties
     std::ifstream file(target_path);

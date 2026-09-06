@@ -27,7 +27,7 @@ bool LauncherWindow::init() {
         m_dmenu_provider.load_from_stdin();
     }
 
-    auto theme = Theme::get();
+    auto config = Config::get();
 
     // 1. GridView setup
     m_grid = GridViewBuilder::create()
