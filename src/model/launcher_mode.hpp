@@ -34,6 +34,7 @@ struct LauncherConfig {
     int height = 460;
     int cell_size = 100;
     int spacing = 10;
+    bool dim_backdrop = false;
     std::string config_path = "";
 };
 
