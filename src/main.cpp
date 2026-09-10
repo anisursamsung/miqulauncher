@@ -5,6 +5,20 @@
 
 int main(int argc, char* argv[]) {
     miqu::LauncherConfig config;
+
+    // Scan if custom config file path was specified on CLI
+    for (int i = 1; i + 1 < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "-c" || arg == "--config" || arg == "-config") {
+            config.config_path = argv[i + 1];
+            break;
+        }
+    }
+
+    // Load independent launcher configuration & theme
+    miqu::ConfigManager::load(config);
+
+    // Parse CLI options (CLI options override config file settings)
     auto parse_res = miqu::CliParser::parse(argc, argv, config);
     if (parse_res == miqu::CliParser::ParseResult::ExitSuccess) {
         return 0;
@@ -12,9 +26,6 @@ int main(int argc, char* argv[]) {
     if (parse_res == miqu::CliParser::ParseResult::Error) {
         return 1;
     }
-
-    // Load independent launcher configuration & theme
-    miqu::ConfigManager::load(config);
 
     auto engine = miqu::AppEngine::create();
     if (!engine) {

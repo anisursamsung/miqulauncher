@@ -41,16 +41,20 @@ void CliParser::print_help(const char* prog_name) {
     std::cout << "Usage: " << prog_name << " [options]\n\n"
               << "A modern, minimalist application launcher and dmenu runner.\n\n"
               << "Options:\n"
-              << "  -show <mode>       Run in dedicated mode (drun, window, workspaces, run)\n"
-              << "  -modes <list>      Comma-separated list of enabled modes (e.g. 'drun,run' or 'drun,power:~/bin/power.sh')\n"
-              << "  -dmenu             Run in dmenu mode (read items from stdin, write choice to stdout)\n"
-              << "  -c, --config <path>Custom configuration file path\n"
-              << "  -p, -mesg <text>   Custom prompt label for the search pill\n"
-              << "  -filter, -q <text> Pre-fill search filter query\n"
-              << "  --dim              Enable dimming background overlay outside window\n"
-              << "  --no-dim           Disable dimming background overlay outside window (default)\n"
-              << "  -h, --help         Show this help message and exit\n"
-              << "  -v, --version      Show version information and exit\n"
+              << "  -show <mode>         Run in dedicated mode (drun, window, workspaces, run)\n"
+              << "  -modes <list>        Comma-separated list of enabled modes (e.g. 'drun,run' or 'drun,power:~/bin/power.sh')\n"
+              << "  -dmenu               Run in dmenu mode (read items from stdin, write choice to stdout)\n"
+              << "                       Supports Rofi metadata: label\\0icon\\x1f<path>\\x1finfo\\x1f<val>\\x1fmeta\\x1f<tags>\n"
+              << "  -c, --config <path>  Custom configuration file path\n"
+              << "  -p, -mesg <text>     Custom prompt label for the search pill\n"
+              << "  -filter, -q <text>   Pre-fill search filter query\n"
+              << "  -cell-size <px>      Override grid cell size (e.g. 140 for image/wallpaper thumbnails)\n"
+              << "  -width <px>          Override launcher window width\n"
+              << "  -height <px>         Override launcher window height\n"
+              << "  --dim                Enable dimming background overlay outside window\n"
+              << "  --no-dim             Disable dimming background overlay outside window (default)\n"
+              << "  -h, --help           Show this help message and exit\n"
+              << "  -v, --version        Show version information and exit\n"
               << std::endl;
 }
 
@@ -90,6 +94,12 @@ CliParser::ParseResult CliParser::parse(int argc, char* argv[], LauncherConfig& 
             prompt_override = argv[++i];
         } else if ((arg == "-filter" || arg == "--filter" || arg == "-q" || arg == "--query") && i + 1 < argc) {
             query_filter = argv[++i];
+        } else if ((arg == "-cell-size" || arg == "--cell-size") && i + 1 < argc) {
+            try { out_config.cell_size = std::max(30, std::stoi(argv[++i])); } catch (...) {}
+        } else if ((arg == "-width" || arg == "--width") && i + 1 < argc) {
+            try { out_config.width = std::max(200, std::stoi(argv[++i])); } catch (...) {}
+        } else if ((arg == "-height" || arg == "--height") && i + 1 < argc) {
+            try { out_config.height = std::max(150, std::stoi(argv[++i])); } catch (...) {}
         } else if (arg == "--dim" || arg == "-dim") {
             out_config.dim_backdrop = true;
         } else if (arg == "--no-dim" || arg == "-no-dim") {

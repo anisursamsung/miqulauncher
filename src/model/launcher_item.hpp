@@ -12,6 +12,10 @@ struct LauncherItem {
     std::string icon_path;
     std::string badge;
     std::string exec_cmd;
+    std::string return_value;
+    std::string meta_tags;
+    bool is_image = false;
+    bool non_selectable = false;
     bool terminal = false;
 };
 

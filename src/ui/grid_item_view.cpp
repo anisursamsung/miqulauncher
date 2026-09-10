@@ -13,54 +13,96 @@ void GridItemView::draw(cairo_t* cr, const Rect& bounds) {
     if (!cr || bounds.width <= 0 || bounds.height <= 0) return;
 
     auto config = Config::get();
-
-    // Draw App Icon
-    Rect icon_rect(bounds.x + (bounds.width - 48) / 2, bounds.y + 12, 48, 48);
-    ImageView icon_view(m_data.icon_path.empty() ? m_data.icon_name : m_data.icon_path);
-    icon_view.set_target_size(48);
-    icon_view.draw(cr, icon_rect);
-
-    // Draw App Title
-    PangoLayout* layout = pango_cairo_create_layout(cr);
-    pango_layout_set_text(layout, m_data.title.c_str(), -1);
-
     std::string font_family = config->metrics.font_family.empty() ? "Sans" : config->metrics.font_family;
     int font_size = config->metrics.font_size > 0 ? config->metrics.font_size : 10;
-    std::string font_spec = font_family + " " + std::to_string(font_size);
+    int horiz_padding = 8;
+    int text_max_w = std::max(0, bounds.width - horiz_padding * 2);
 
-    PangoFontDescription* desc = pango_font_description_from_string(font_spec.c_str());
-    pango_layout_set_font_description(layout, desc);
-    pango_font_description_free(desc);
+    // 1. Prepare Title Layout & Measure Height
+    PangoLayout* title_layout = pango_cairo_create_layout(cr);
+    pango_layout_set_text(title_layout, m_data.title.c_str(), -1);
+    std::string title_font_spec = font_family + " " + std::to_string(font_size);
+    PangoFontDescription* title_desc = pango_font_description_from_string(title_font_spec.c_str());
+    pango_layout_set_font_description(title_layout, title_desc);
+    pango_font_description_free(title_desc);
+    pango_layout_set_alignment(title_layout, PANGO_ALIGN_CENTER);
+    pango_layout_set_width(title_layout, text_max_w * PANGO_SCALE);
+    pango_layout_set_ellipsize(title_layout, PANGO_ELLIPSIZE_END);
 
-    pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-    pango_layout_set_width(layout, std::max(0, bounds.width - 8) * PANGO_SCALE);
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+    int title_w = 0, title_h = 0;
+    pango_layout_get_pixel_size(title_layout, &title_w, &title_h);
 
-    cairo_move_to(cr, bounds.x + 4, bounds.y + 66);
+    // 2. Prepare Subtitle Layout & Measure Height (if present and not image mode)
+    bool has_subtitle = !m_data.subtitle.empty() && !m_data.is_image;
+    PangoLayout* sub_layout = nullptr;
+    int sub_w = 0, sub_h = 0;
+    if (has_subtitle) {
+        sub_layout = pango_cairo_create_layout(cr);
+        pango_layout_set_text(sub_layout, m_data.subtitle.c_str(), -1);
+        int sub_size = std::max(6, font_size - 2);
+        std::string sub_font_spec = font_family + " " + std::to_string(sub_size);
+        PangoFontDescription* sub_desc = pango_font_description_from_string(sub_font_spec.c_str());
+        pango_layout_set_font_description(sub_layout, sub_desc);
+        pango_font_description_free(sub_desc);
+        pango_layout_set_alignment(sub_layout, PANGO_ALIGN_CENTER);
+        pango_layout_set_width(sub_layout, text_max_w * PANGO_SCALE);
+        pango_layout_set_ellipsize(sub_layout, PANGO_ELLIPSIZE_END);
+        pango_layout_get_pixel_size(sub_layout, &sub_w, &sub_h);
+    }
+
+    int title_y = 0;
+    int sub_y = 0;
+
+    if (m_data.is_image) {
+        // --- Image Thumbnail Mode ---
+        int pad_x = 8;
+        int pad_top = 8;
+        int pad_bottom = 6;
+        int gap = 6; // Breathing space between thumbnail and title
+        int img_w = bounds.width - pad_x * 2;
+        int img_h = std::max(20, bounds.height - pad_top - gap - title_h - pad_bottom);
+
+        Rect img_rect(bounds.x + pad_x, bounds.y + pad_top, img_w, img_h);
+        ImageView img_view(m_data.icon_path.empty() ? m_data.icon_name : m_data.icon_path);
+        img_view.set_target_size(std::max(img_w, img_h));
+        img_view.set_fit_mode(FitMode::Cover);
+        img_view.set_corner_radius(6);
+        img_view.draw(cr, img_rect);
+
+        title_y = bounds.y + pad_top + img_h + gap;
+    } else {
+        // --- Standard App Icon Mode ---
+        // Dynamically compute icon size and spacing so icon, title, and subtitle have breathing room
+        int icon_size = has_subtitle ? 42 : 48;
+        int icon_title_gap = has_subtitle ? 6 : 10;
+        int title_sub_gap = 4; // Clear breathing room between title and subtitle
+
+        int total_content_h = icon_size + icon_title_gap + title_h + (has_subtitle ? (title_sub_gap + sub_h) : 0);
+        int top_offset = std::max(6, (bounds.height - total_content_h) / 2);
+
+        Rect icon_rect(bounds.x + (bounds.width - icon_size) / 2, bounds.y + top_offset, icon_size, icon_size);
+        ImageView icon_view(m_data.icon_path.empty() ? m_data.icon_name : m_data.icon_path);
+        icon_view.set_target_size(icon_size);
+        icon_view.draw(cr, icon_rect);
+
+        title_y = bounds.y + top_offset + icon_size + icon_title_gap;
+        if (has_subtitle) {
+            sub_y = title_y + title_h + title_sub_gap;
+        }
+    }
+
+    // 3. Render Title
+    cairo_move_to(cr, bounds.x + horiz_padding, title_y);
     cairo_set_source_rgba(cr, config->colors.on_surface.r,
                               config->colors.on_surface.g,
                               config->colors.on_surface.b,
                               config->colors.on_surface.a);
-    pango_cairo_show_layout(cr, layout);
-    g_object_unref(layout);
+    pango_cairo_show_layout(cr, title_layout);
+    g_object_unref(title_layout);
 
-    // Draw Subtitle if present
-    if (!m_data.subtitle.empty()) {
-        PangoLayout* sub_layout = pango_cairo_create_layout(cr);
-        pango_layout_set_text(sub_layout, m_data.subtitle.c_str(), -1);
-
-        int sub_size = std::max(6, font_size - 2);
-        std::string sub_font_spec = font_family + " " + std::to_string(sub_size);
-
-        PangoFontDescription* sub_desc = pango_font_description_from_string(sub_font_spec.c_str());
-        pango_layout_set_font_description(sub_layout, sub_desc);
-        pango_font_description_free(sub_desc);
-
-        pango_layout_set_alignment(sub_layout, PANGO_ALIGN_CENTER);
-        pango_layout_set_width(sub_layout, std::max(0, bounds.width - 8) * PANGO_SCALE);
-        pango_layout_set_ellipsize(sub_layout, PANGO_ELLIPSIZE_END);
-
-        cairo_move_to(cr, bounds.x + 4, bounds.y + 80);
+    // 4. Render Subtitle
+    if (has_subtitle && sub_layout) {
+        cairo_move_to(cr, bounds.x + horiz_padding, sub_y);
         if (m_data.subtitle.find("Active") != std::string::npos) {
             cairo_set_source_rgba(cr, config->colors.primary.r,
                                       config->colors.primary.g,

@@ -16,7 +16,8 @@ public:
     void submit(const std::string& raw_text);
 
 private:
-    std::vector<std::string> m_raw_items;
+    static LauncherItem parse_line(const std::string& line, size_t index);
+    std::vector<LauncherItem> m_items;
 };
 
 } // namespace miqu
