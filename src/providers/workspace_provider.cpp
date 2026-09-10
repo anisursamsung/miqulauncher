@@ -50,13 +50,35 @@ std::vector<LauncherItem> WorkspaceProvider::get_items(const std::string& query,
     }
 
     std::string lower_query = to_lower(query);
-    std::vector<LauncherItem> filtered;
-    for (const auto& item : items) {
-        if (to_lower(item.title).find(lower_query) != std::string::npos ||
-            to_lower(item.subtitle).find(lower_query) != std::string::npos ||
-            to_lower(item.id).find(lower_query) != std::string::npos) {
-            filtered.push_back(item);
+    std::vector<std::pair<int, LauncherItem>> scored;
+    scored.reserve(items.size());
+
+    for (auto& item : items) {
+        std::string lower_title = to_lower(item.title);
+        int score = 0;
+        if (item.id == query) {
+            score = 10000;
+        } else if (lower_title.rfind(lower_query, 0) == 0) {
+            score = 5000;
+        } else if (lower_title.find(' ' + lower_query) != std::string::npos) {
+            score = 4000;
+        } else if (lower_title.find(lower_query) != std::string::npos) {
+            score = 2000;
         }
+
+        if (score > 0) {
+            scored.push_back({score, std::move(item)});
+        }
+    }
+
+    std::sort(scored.begin(), scored.end(), [](const auto& a, const auto& b) {
+        return a.first > b.first;
+    });
+
+    std::vector<LauncherItem> filtered;
+    filtered.reserve(scored.size());
+    for (auto& s : scored) {
+        filtered.push_back(std::move(s.second));
     }
     return filtered;
 }

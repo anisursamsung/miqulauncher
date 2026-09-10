@@ -14,6 +14,7 @@ struct LauncherItem {
     std::string exec_cmd;
     std::string return_value;
     std::string meta_tags;
+    std::string keywords;
     bool is_image = false;
     bool non_selectable = false;
     bool terminal = false;

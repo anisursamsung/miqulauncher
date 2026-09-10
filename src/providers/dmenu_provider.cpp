@@ -1,4 +1,6 @@
 #include "dmenu_provider.hpp"
+#include <miqutoolkit/view/image_view.hpp>
+#include <miqutoolkit/core/fs_utils.hpp>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -8,30 +10,6 @@
 namespace miqu {
 
 namespace fs = std::filesystem;
-
-static bool has_image_extension(const std::string& path) {
-    std::string lower = path;
-    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-    const std::vector<std::string> exts = {
-        ".png", ".jpg", ".jpeg", ".webp", ".svg", ".bmp", ".gif", ".ico", ".avif"
-    };
-    for (const auto& ext : exts) {
-        if (lower.size() >= ext.size() && lower.compare(lower.size() - ext.size(), ext.size(), ext) == 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-static std::string expand_path_str(const std::string& path) {
-    if (!path.empty() && path[0] == '~') {
-        const char* home = getenv("HOME");
-        if (home) {
-            return std::string(home) + path.substr(1);
-        }
-    }
-    return path;
-}
 
 DmenuProvider::DmenuProvider() {}
 
@@ -61,8 +39,8 @@ LauncherItem DmenuProvider::parse_line(const std::string& line, size_t index) {
             std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
             if (key == "icon") {
-                std::string expanded = expand_path_str(val);
-                if (has_image_extension(expanded) || expanded.find('/') != std::string::npos) {
+                std::string expanded = FsUtils::expand_user_path(val);
+                if (FsUtils::has_image_extension(expanded) || expanded.find('/') != std::string::npos) {
                     item.icon_path = expanded;
                     item.is_image = true;
                 } else {
@@ -78,8 +56,8 @@ LauncherItem DmenuProvider::parse_line(const std::string& line, size_t index) {
             }
         }
     } else {
-        std::string expanded = expand_path_str(line);
-        if (has_image_extension(expanded) && (expanded[0] == '/' || expanded.find('/') != std::string::npos)) {
+        std::string expanded = FsUtils::expand_user_path(line);
+        if (FsUtils::has_image_extension(expanded) && (expanded[0] == '/' || expanded.find('/') != std::string::npos)) {
             item.title = fs::path(expanded).filename().string();
             item.icon_path = expanded;
             item.is_image = true;
@@ -106,7 +84,11 @@ void DmenuProvider::load_from_stdin() {
             line.pop_back();
         }
         if (!line.empty()) {
-            m_items.push_back(parse_line(line, index++));
+            auto item = parse_line(line, index++);
+            if (item.is_image) {
+                ImageView::preload(item.icon_path.empty() ? item.icon_name : item.icon_path);
+            }
+            m_items.push_back(std::move(item));
         }
     }
 }

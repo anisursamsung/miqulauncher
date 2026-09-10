@@ -1,6 +1,8 @@
 #include "launcher_window.hpp"
 #include "grid_item_view.hpp"
+#include "system/binary_manager.hpp"
 #include <xkbcommon/xkbcommon-keysyms.h>
+#include <thread>
 
 namespace miqu {
 
@@ -132,15 +134,16 @@ bool LauncherWindow::init() {
         }
     });
 
+    // Pre-load apps synchronously (<2ms) so Frame 0 is instantly populated
+    m_app_provider.ensure_loaded();
+
+    // Pre-warm system binary index asynchronously so switching to 'run' mode is instant
+    std::thread([]() {
+        BinaryManager::get_binary_entries();
+    }).detach();
+
     // Populate initial mode
     switch_mode(m_active_mode_index);
-
-    // Pre-scan desktop apps in the background
-    m_app_provider.load_async([this]() {
-        if (m_config.modes[m_active_mode_index].type == ModeType::App) {
-            refresh_current_mode();
-        }
-    });
 
     return true;
 }
@@ -169,8 +172,7 @@ void LauncherWindow::refresh_current_mode() {
 
     switch (mode.type) {
         case ModeType::App: {
-            auto items = m_app_provider.get_items(query);
-            m_grid->set_items(to_views(items));
+            m_grid->set_items(m_app_provider.get_views(query));
             break;
         }
         case ModeType::Window: {
