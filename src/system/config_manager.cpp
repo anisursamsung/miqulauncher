@@ -17,15 +17,7 @@ static std::string trim_str(const std::string& str) {
 }
 
 std::string ConfigManager::get_user_config_path() {
-    const char* xdg_config = getenv("XDG_CONFIG_HOME");
-    const char* home = getenv("HOME");
-    if (xdg_config && *xdg_config) {
-        return std::string(xdg_config) + "/miqulauncher/miqulauncher.conf";
-    }
-    if (home && *home) {
-        return std::string(home) + "/.config/miqulauncher/miqulauncher.conf";
-    }
-    return "";
+    return Config::ensure_user_config("miqulauncher", "miqulauncher.conf");
 }
 
 void ConfigManager::load(LauncherConfig& config) {
