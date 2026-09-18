@@ -1,11 +1,11 @@
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <thread>
+#include <algorithm>
 #include "app_provider.hpp"
 #include "system/package_manager.hpp"
 #include "ui/grid_item_view.hpp"
-#include <thread>
-#include <algorithm>
-#include <fstream>
-#include <filesystem>
-#include <sstream>
 
 namespace miqu {
 
@@ -75,7 +75,7 @@ void AppProvider::ensure_loaded() {
 
         auto it = m_usage_counts.find(entry.item.id);
         entry.launch_count = (it != m_usage_counts.end()) ? it->second : 0;
-        entry.view = std::make_shared<GridItemView>(entry.item);
+        entry.view = std::make_shared<LauncherGridItemView>(entry.item);
 
         m_entries.push_back(std::move(entry));
     }

@@ -1,15 +1,15 @@
 #pragma once
 
 #include "model/launcher_item.hpp"
-#include <miqutoolkit/view/tile_view.hpp>
+#include <miqutoolkit/view/grid_item_view.hpp>
 #include <memory>
 
 namespace miqu {
 
-class GridItemView : public TileView {
+class LauncherGridItemView : public GridItemView {
 public:
-    explicit GridItemView(LauncherItem data);
-    ~GridItemView() override = default;
+    explicit LauncherGridItemView(LauncherItem data);
+    ~LauncherGridItemView() override = default;
 
     const LauncherItem& get_data() const { return m_data; }
     LauncherItem& get_data() { return m_data; }

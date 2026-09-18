@@ -10,7 +10,7 @@ static std::vector<std::shared_ptr<View>> to_views(const std::vector<LauncherIte
     std::vector<std::shared_ptr<View>> views;
     views.reserve(items.size());
     for (const auto& item : items) {
-        views.push_back(std::make_shared<GridItemView>(item));
+        views.push_back(std::make_shared<LauncherGridItemView>(item));
     }
     return views;
 }
@@ -223,7 +223,7 @@ void LauncherWindow::refresh_current_mode() {
 }
 
 void LauncherWindow::handle_item_click(size_t index, std::shared_ptr<View> view) {
-    auto item_view = std::dynamic_pointer_cast<GridItemView>(view);
+    auto item_view = std::dynamic_pointer_cast<LauncherGridItemView>(view);
     if (!item_view) return;
 
     const auto& data = item_view->get_data();

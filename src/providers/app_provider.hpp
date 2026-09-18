@@ -10,7 +10,7 @@
 namespace miqu {
 
 class View;
-class GridItemView;
+class LauncherGridItemView;
 
 struct AppEntry {
     LauncherItem item;
@@ -20,7 +20,7 @@ struct AppEntry {
     std::string lower_id;
     std::string lower_keywords;
     int launch_count = 0;
-    std::shared_ptr<GridItemView> view;
+    std::shared_ptr<LauncherGridItemView> view;
 };
 
 class AppProvider {
