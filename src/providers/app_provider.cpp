@@ -5,7 +5,6 @@
 #include <algorithm>
 #include "app_provider.hpp"
 #include "system/package_manager.hpp"
-#include "ui/grid_item_view.hpp"
 
 namespace miqu {
 
@@ -75,7 +74,6 @@ void AppProvider::ensure_loaded() {
 
         auto it = m_usage_counts.find(entry.item.id);
         entry.launch_count = (it != m_usage_counts.end()) ? it->second : 0;
-        entry.view = std::make_shared<LauncherGridItemView>(entry.item);
 
         m_entries.push_back(std::move(entry));
     }
@@ -87,12 +85,6 @@ void AppProvider::ensure_loaded() {
         }
         return a.lower_title < b.lower_title;
     });
-
-    m_all_views.clear();
-    m_all_views.reserve(m_entries.size());
-    for (const auto& entry : m_entries) {
-        m_all_views.push_back(entry.view);
-    }
 
     m_loaded = true;
 }
@@ -189,36 +181,6 @@ static int compute_score(const AppEntry& entry, const std::string& query, const 
     }
 
     return score;
-}
-
-std::vector<std::shared_ptr<View>> AppProvider::get_views(const std::string& query) {
-    ensure_loaded();
-
-    if (query.empty()) {
-        return m_all_views;
-    }
-
-    std::string lower_query = to_lower(query);
-    std::vector<std::pair<int, std::shared_ptr<View>>> scored;
-    scored.reserve(m_entries.size());
-
-    for (const auto& entry : m_entries) {
-        int s = compute_score(entry, query, lower_query);
-        if (s > 0) {
-            scored.push_back({s, entry.view});
-        }
-    }
-
-    std::sort(scored.begin(), scored.end(), [](const auto& a, const auto& b) {
-        return a.first > b.first;
-    });
-
-    std::vector<std::shared_ptr<View>> result;
-    result.reserve(scored.size());
-    for (const auto& item : scored) {
-        result.push_back(item.second);
-    }
-    return result;
 }
 
 std::vector<LauncherItem> AppProvider::get_items(const std::string& query) {

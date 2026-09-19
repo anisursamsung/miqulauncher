@@ -6,15 +6,6 @@
 
 namespace miqu {
 
-static std::vector<std::shared_ptr<View>> to_views(const std::vector<LauncherItem>& items) {
-    std::vector<std::shared_ptr<View>> views;
-    views.reserve(items.size());
-    for (const auto& item : items) {
-        views.push_back(std::make_shared<LauncherGridItemView>(item));
-    }
-    return views;
-}
-
 LauncherWindow::LauncherWindow(AppEngine* engine, LauncherConfig config)
     : m_engine(engine), m_config(std::move(config)), m_active_mode_index(m_config.active_mode_index) {}
 
@@ -31,7 +22,15 @@ bool LauncherWindow::init() {
 
     auto config = Config::get();
 
-    // 1. GridView setup
+    // 1. Pre-load app registry synchronously so initial drun items are ready
+    m_app_provider.ensure_loaded();
+
+    // 2. Pre-warm system binary index asynchronously
+    std::thread([]() {
+        BinaryManager::get_binary_entries();
+    }).detach();
+
+    // 3. GridView setup
     m_grid = GridViewBuilder::create()
         ->autoFit(m_config.cell_size)
         ->cellHeight(m_config.cell_size)
@@ -43,7 +42,7 @@ bool LauncherWindow::init() {
 
     const auto& init_mode = m_config.modes[m_active_mode_index];
 
-    // 2. Search View (Mode indicator in title pill + search input)
+    // 4. Search View setup
     m_search = SearchViewBuilder::create()
         ->title(init_mode.display_label)
         ->hint(init_mode.hint)
@@ -64,14 +63,16 @@ bool LauncherWindow::init() {
         m_search->set_query(m_config.initial_query);
     }
 
-    // 3. Vertical content layout (Clean: only Search Bar + Grid)
+    // 5. Populate initial mode BEFORE constructing the Wayland window
+    switch_mode(m_active_mode_index);
+
+    // 6. Layout assembly
     auto contentLayout = LinearLayoutBuilder::create()
         ->orientation(Orientation::Vertical)
         ->addView(m_search, LayoutParams(static_cast<int>(LayoutDimension::MatchParent), static_cast<int>(LayoutDimension::WrapContent)))
         ->addView(m_grid, LayoutParams(1.0f))
         ->build();
 
-    // 4. Modal Card container
     auto rootCard = CardViewBuilder::create()
         ->backgroundColor(config->colors.background)
         ->stroke(config->metrics.border_width, config->colors.outline)
@@ -80,7 +81,20 @@ bool LauncherWindow::init() {
         ->addView(contentLayout, LayoutParams(static_cast<int>(LayoutDimension::MatchParent), static_cast<int>(LayoutDimension::MatchParent)))
         ->build();
 
-    // 5. Layer overlay Window
+    // 7. Live state subscriptions
+    m_window_provider.on_windows_changed([this]() {
+        if (m_config.modes[m_active_mode_index].type == ModeType::Window) {
+            refresh_current_mode();
+        }
+    });
+
+    m_workspace_provider.on_workspaces_changed([this]() {
+        if (m_config.modes[m_active_mode_index].type == ModeType::Workspace) {
+            refresh_current_mode();
+        }
+    });
+
+    // 8. Layer overlay Window (Frame 0 is 100% pre-warmed & ready to draw)
     auto builder = WindowBuilder::create()
         ->role(WindowRole::LayerOverlay)
         ->appId("miqulauncher")
@@ -117,35 +131,7 @@ bool LauncherWindow::init() {
         })
         ->build();
 
-    if (!m_window) {
-        return false;
-    }
-
-    // Live state subscriptions
-    m_window_provider.on_windows_changed([this]() {
-        if (m_config.modes[m_active_mode_index].type == ModeType::Window) {
-            refresh_current_mode();
-        }
-    });
-
-    m_workspace_provider.on_workspaces_changed([this]() {
-        if (m_config.modes[m_active_mode_index].type == ModeType::Workspace) {
-            refresh_current_mode();
-        }
-    });
-
-    // Pre-load apps synchronously (<2ms) so Frame 0 is instantly populated
-    m_app_provider.ensure_loaded();
-
-    // Pre-warm system binary index asynchronously so switching to 'run' mode is instant
-    std::thread([]() {
-        BinaryManager::get_binary_entries();
-    }).detach();
-
-    // Populate initial mode
-    switch_mode(m_active_mode_index);
-
-    return true;
+    return m_window != nullptr;
 }
 
 void LauncherWindow::switch_mode(size_t mode_index) {
@@ -170,51 +156,71 @@ void LauncherWindow::refresh_current_mode() {
     std::string query = m_search ? m_search->get_query() : "";
     const auto& mode = m_config.modes[m_active_mode_index];
 
+    int desired_selected_idx = 0;
+
     switch (mode.type) {
         case ModeType::App: {
-            m_grid->set_items(m_app_provider.get_views(query));
+            m_current_items = m_app_provider.get_items(query);
             break;
         }
         case ModeType::Window: {
-            auto items = m_window_provider.get_items(query);
-            m_grid->set_items(to_views(items));
+            m_current_items = m_window_provider.get_items(query);
             break;
         }
         case ModeType::Workspace: {
             int active_idx = -1;
-            auto items = m_workspace_provider.get_items(query, &active_idx);
-            m_grid->set_items(to_views(items));
+            m_current_items = m_workspace_provider.get_items(query, &active_idx);
             if (active_idx >= 0 && query.empty()) {
-                m_grid->set_selected_index(active_idx);
+                desired_selected_idx = active_idx;
             }
             break;
         }
         case ModeType::Run: {
-            auto items = m_run_provider.get_items(query);
-            m_grid->set_items(to_views(items));
-            if (m_grid->get_selected_index() < 0 && !items.empty()) {
-                m_grid->set_selected_index(0);
-            }
+            m_current_items = m_run_provider.get_items(query);
             break;
         }
         case ModeType::Script: {
             if (m_script_provider) {
-                auto items = m_script_provider->query(query);
-                m_grid->set_items(to_views(items));
-                if (m_grid->get_selected_index() < 0 && !items.empty()) {
-                    m_grid->set_selected_index(0);
-                }
+                m_current_items = m_script_provider->query(query);
+            } else {
+                m_current_items.clear();
             }
             break;
         }
         case ModeType::Dmenu: {
-            auto items = m_dmenu_provider.query(query);
-            m_grid->set_items(to_views(items));
-            if (m_grid->get_selected_index() < 0 && !items.empty()) {
-                m_grid->set_selected_index(0);
-            }
+            m_current_items = m_dmenu_provider.query(query);
             break;
         }
+    }
+
+    m_view_cache.assign(m_current_items.size(), nullptr);
+
+    // Pre-warm visible items for Frame 0 instant draw (exact visible viewport)
+    int stride = std::max(1, m_config.cell_size + m_config.spacing);
+    int cols = std::max(1, m_config.width / stride);
+    int grid_h = std::max(1, m_config.height - 80);
+    int rows = std::max(1, grid_h / stride);
+    size_t visible_capacity = static_cast<size_t>(cols * rows);
+    size_t prewarm_count = std::min<size_t>(m_current_items.size(), std::max<size_t>(10, visible_capacity));
+    for (size_t i = 0; i < prewarm_count; ++i) {
+        m_view_cache[i] = std::make_shared<LauncherGridItemView>(m_current_items[i]);
+    }
+
+    m_grid->set_item_provider(m_current_items.size(), [this](size_t index) -> std::shared_ptr<View> {
+        if (index >= m_current_items.size()) return nullptr;
+        if (index >= m_view_cache.size()) {
+            m_view_cache.resize(m_current_items.size(), nullptr);
+        }
+        if (!m_view_cache[index]) {
+            m_view_cache[index] = std::make_shared<LauncherGridItemView>(m_current_items[index]);
+        }
+        return m_view_cache[index];
+    });
+
+    if (m_current_items.empty()) {
+        m_grid->set_selected_index(-1);
+    } else {
+        m_grid->set_selected_index(desired_selected_idx);
     }
 
     if (m_window) {
@@ -223,10 +229,15 @@ void LauncherWindow::refresh_current_mode() {
 }
 
 void LauncherWindow::handle_item_click(size_t index, std::shared_ptr<View> view) {
-    auto item_view = std::dynamic_pointer_cast<LauncherGridItemView>(view);
-    if (!item_view) return;
+    LauncherItem data;
+    if (index < m_current_items.size()) {
+        data = m_current_items[index];
+    } else {
+        auto item_view = std::dynamic_pointer_cast<LauncherGridItemView>(view);
+        if (!item_view) return;
+        data = item_view->get_data();
+    }
 
-    const auto& data = item_view->get_data();
     const auto& mode = m_config.modes[m_active_mode_index];
 
     switch (mode.type) {

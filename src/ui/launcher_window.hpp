@@ -13,6 +13,8 @@
 
 namespace miqu {
 
+class LauncherGridItemView;
+
 class LauncherWindow {
 public:
     LauncherWindow(AppEngine* engine, LauncherConfig config);
@@ -33,6 +35,9 @@ private:
     std::shared_ptr<Window> m_window;
     std::shared_ptr<GridView> m_grid;
     std::shared_ptr<SearchView> m_search;
+
+    std::vector<LauncherItem> m_current_items;
+    mutable std::vector<std::shared_ptr<LauncherGridItemView>> m_view_cache;
 
     AppProvider m_app_provider;
     WindowProvider m_window_provider;
