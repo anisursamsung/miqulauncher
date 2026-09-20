@@ -1,4 +1,5 @@
 #include "cli_parser.hpp"
+#include <miqutoolkit/core/config.hpp>
 #include <iostream>
 #include <sstream>
 #include <cstring>
@@ -55,6 +56,7 @@ void CliParser::print_help(const char* prog_name) {
               << "  --no-dim             Disable dimming background overlay outside window (default)\n"
               << "  --show-subtitles     Show item subtitles across all launcher modes (default)\n"
               << "  --no-subtitles       Hide item subtitles across all launcher modes\n"
+              << "  -icon-theme <name>   Override active icon theme\n"
               << "  -h, --help           Show this help message and exit\n"
               << "  -v, --version        Show version information and exit\n"
               << std::endl;
@@ -110,6 +112,10 @@ CliParser::ParseResult CliParser::parse(int argc, char* argv[], LauncherConfig& 
             out_config.show_subtitles = true;
         } else if (arg == "--no-subtitles") {
             out_config.show_subtitles = false;
+        } else if ((arg == "-icon-theme" || arg == "--icon-theme") && i + 1 < argc) {
+            out_config.icon_theme = argv[++i];
+            Config::get()->metrics.icon_theme = out_config.icon_theme;
+            Config::get()->notify_changed();
         } else {
             std::cerr << "Unknown option: " << arg << "\nRun '" << argv[0] << " --help' for usage." << std::endl;
             return ParseResult::Error;

@@ -10,14 +10,11 @@ namespace miqu {
 
 class WorkspaceProvider {
 public:
-    WorkspaceProvider();
+    WorkspaceProvider() = default;
 
     std::vector<LauncherItem> get_items(const std::string& query = "", int* out_active_index = nullptr) const;
     void activate(const LauncherItem& item) const;
     void on_workspaces_changed(std::function<void()> cb);
-
-private:
-    std::string m_icon_path;
 };
 
 } // namespace miqu

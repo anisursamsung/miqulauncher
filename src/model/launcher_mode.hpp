@@ -36,6 +36,7 @@ struct LauncherConfig {
     int spacing = 10;
     bool dim_backdrop = false;
     bool show_subtitles = true;
+    std::string icon_theme = "";
     std::string config_path = "";
 };
 

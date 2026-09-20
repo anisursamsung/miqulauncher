@@ -15,13 +15,6 @@ static std::string to_lower(std::string s) {
     return s;
 }
 
-RunProvider::RunProvider() {
-    m_icon_path = ImageView::resolve_icon_path("system-run");
-    if (m_icon_path.empty()) {
-        m_icon_path = ImageView::resolve_icon_path("utilities-terminal");
-    }
-}
-
 static std::string get_run_usage_path() {
     const char* home = getenv("HOME");
     if (!home) return "";
@@ -98,7 +91,7 @@ std::vector<LauncherItem> RunProvider::get_items(const std::string& query) const
             info.terminal = bin.is_terminal;
             info.subtitle = info.terminal ? "Terminal Command" : "System Binary";
             info.icon_name = info.terminal ? "utilities-terminal" : "system-run";
-            info.icon_path = m_icon_path;
+            info.icon_path = "";
             info.exec_cmd = bin.name;
             items.push_back(std::move(info));
         }
@@ -139,7 +132,7 @@ std::vector<LauncherItem> RunProvider::get_items(const std::string& query) const
             info.terminal = bin.is_terminal;
             info.subtitle = info.terminal ? "Terminal Command" : "System Binary";
             info.icon_name = info.terminal ? "utilities-terminal" : "system-run";
-            info.icon_path = m_icon_path;
+            info.icon_path = "";
             info.exec_cmd = bin.name;
             items.push_back(std::move(info));
         }

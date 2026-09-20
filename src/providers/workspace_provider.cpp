@@ -9,13 +9,6 @@ static std::string to_lower(std::string s) {
     return s;
 }
 
-WorkspaceProvider::WorkspaceProvider() {
-    m_icon_path = ImageView::resolve_icon_path("preferences-desktop-workspaces");
-    if (m_icon_path.empty()) {
-        m_icon_path = ImageView::resolve_icon_path("desktop");
-    }
-}
-
 std::vector<LauncherItem> WorkspaceProvider::get_items(const std::string& query, int* out_active_index) const {
     auto workspaces = WorkspaceManager::get()->get_workspaces();
     std::vector<LauncherItem> items;
@@ -38,7 +31,7 @@ std::vector<LauncherItem> WorkspaceProvider::get_items(const std::string& query,
             item.subtitle = "Empty";
         }
         item.icon_name = "preferences-desktop-workspaces";
-        item.icon_path = m_icon_path;
+        item.icon_path = "";
         items.push_back(std::move(item));
     }
 
