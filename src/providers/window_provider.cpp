@@ -18,6 +18,7 @@ std::vector<LauncherItem> WindowProvider::get_items(const std::string& query) co
         LauncherItem item;
         item.id = std::to_string(win.id);
         item.title = !win.title.empty() ? win.title : (!win.app_id.empty() ? win.app_id : "Window");
+        item.is_active = win.is_active;
 
         std::string status;
         if (win.is_active) status = "Active";

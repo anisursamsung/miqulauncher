@@ -193,6 +193,12 @@ void LauncherWindow::refresh_current_mode() {
         }
     }
 
+    if (!m_config.show_subtitles) {
+        for (auto& item : m_current_items) {
+            item.subtitle.clear();
+        }
+    }
+
     m_view_cache.assign(m_current_items.size(), nullptr);
 
     // Pre-warm visible items for Frame 0 instant draw (exact visible viewport)

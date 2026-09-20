@@ -72,6 +72,10 @@ void ConfigManager::load(LauncherConfig& config) {
             std::string lower_val = val;
             std::transform(lower_val.begin(), lower_val.end(), lower_val.begin(), ::tolower);
             config.dim_backdrop = (lower_val == "true" || lower_val == "1" || lower_val == "yes" || lower_val == "on");
+        } else if (key == "show_subtitles") {
+            std::string lower_val = val;
+            std::transform(lower_val.begin(), lower_val.end(), lower_val.begin(), ::tolower);
+            config.show_subtitles = (lower_val == "true" || lower_val == "1" || lower_val == "yes" || lower_val == "on");
         }
     }
 }

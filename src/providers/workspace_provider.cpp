@@ -29,6 +29,7 @@ std::vector<LauncherItem> WorkspaceProvider::get_items(const std::string& query,
         LauncherItem item;
         item.id = std::to_string(workspaces[i].id);
         item.title = "Workspace " + (!workspaces[i].name.empty() ? workspaces[i].name : std::to_string(workspaces[i].id));
+        item.is_active = workspaces[i].is_active;
         if (workspaces[i].is_active) {
             item.subtitle = "● Active";
         } else if (!workspaces[i].is_empty) {

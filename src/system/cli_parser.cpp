@@ -53,6 +53,8 @@ void CliParser::print_help(const char* prog_name) {
               << "  -height <px>         Override launcher window height\n"
               << "  --dim                Enable dimming background overlay outside window\n"
               << "  --no-dim             Disable dimming background overlay outside window (default)\n"
+              << "  --show-subtitles     Show item subtitles across all launcher modes (default)\n"
+              << "  --no-subtitles       Hide item subtitles across all launcher modes\n"
               << "  -h, --help           Show this help message and exit\n"
               << "  -v, --version        Show version information and exit\n"
               << std::endl;
@@ -104,6 +106,10 @@ CliParser::ParseResult CliParser::parse(int argc, char* argv[], LauncherConfig& 
             out_config.dim_backdrop = true;
         } else if (arg == "--no-dim" || arg == "-no-dim") {
             out_config.dim_backdrop = false;
+        } else if (arg == "--show-subtitles") {
+            out_config.show_subtitles = true;
+        } else if (arg == "--no-subtitles") {
+            out_config.show_subtitles = false;
         } else {
             std::cerr << "Unknown option: " << arg << "\nRun '" << argv[0] << " --help' for usage." << std::endl;
             return ParseResult::Error;

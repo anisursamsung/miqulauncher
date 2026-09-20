@@ -18,6 +18,7 @@ struct LauncherItem {
     bool is_image = false;
     bool non_selectable = false;
     bool terminal = false;
+    bool is_active = false;
 };
 
 } // namespace miqu

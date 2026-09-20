@@ -35,6 +35,7 @@ struct LauncherConfig {
     int cell_size = 100;
     int spacing = 10;
     bool dim_backdrop = false;
+    bool show_subtitles = true;
     std::string config_path = "";
 };
 
